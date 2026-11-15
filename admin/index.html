@@ -53,7 +53,14 @@ textarea{min-height:90px}
     <p>כדי לשמור שינויים צריך מפתח גישה של גיטהאב לחשבון של בארבור. המפתח נשמר רק בדפדפן הזה.</p>
     <label for="tok">מפתח גישה</label>
     <input id="tok" type="password" autocomplete="off">
-    <p class="hint">איך מקבלים מפתח: בגיטהאב, בחשבון center-barbour ← Settings ← Developer settings ← Fine-grained tokens ← Generate. לבחור רק את המאגר countrybarbour.co.il, ולתת הרשאת Contents: Read and write.</p>
+    <div class="hint">איך מקבלים מפתח בגיטהאב, מחוברים לחשבון של בארבור:
+      <ol dir="rtl" style="margin:4px 0">
+        <li>להיכנס לקישור: <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">יצירת מפתח חדש</a></li>
+        <li>לתת שם ותוקף.</li>
+        <li>בגישה למאגרים לבחור רק את המאגר:<br><bdi dir="ltr">countrybarbour.co.il</bdi></li>
+        <li>בהרשאות להוסיף:<br><bdi dir="ltr">Contents: Read and write</bdi></li>
+        <li>ללחוץ על יצירה, להעתיק את המפתח ולהדביק כאן.</li>
+      </ol></div>
     <div class="bar"><button id="go">כניסה</button><button class="ghost" id="logout" hidden>יציאה ומחיקת המפתח מהדפדפן</button></div>
   </section>
 
