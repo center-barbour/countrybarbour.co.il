@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>עריכת האתר · קאנטרי קהילתי בארבור</title>
+<link rel="icon" href="data:,">
+<style>
+@font-face{font-family:Heebo;font-weight:400;src:url(../fonts/heebo-hebrew-400-normal.woff2) format('woff2')}
+@font-face{font-family:Heebo;font-weight:700;src:url(../fonts/heebo-hebrew-700-normal.woff2) format('woff2')}
+@font-face{font-family:Heebo;font-weight:800;src:url(../fonts/heebo-hebrew-800-normal.woff2) format('woff2')}
+:root{--blue:#336299;--ink:#16202b;--muted:#5a6772;--line:#d8e0e8;--soft:#f3f6f9;--ok:#1d7a46;--bad:#b3261e}
+*{box-sizing:border-box}
+body{margin:0;font-family:Heebo,Arial,sans-serif;color:var(--ink);background:var(--soft);font-size:16px;line-height:1.5}
+header{background:#fff;border-bottom:1px solid var(--line);padding:12px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;position:sticky;top:0;z-index:5}
+header img{height:52px}
+header h1{font-size:1.25rem;margin:0;flex:1}
+button,.btn{font:inherit;font-weight:700;border:2px solid var(--blue);background:var(--blue);color:#fff;padding:8px 16px;cursor:pointer;text-decoration:none;display:inline-block}
+button.ghost,.btn.ghost{background:#fff;color:var(--blue)}
+button.del{border-color:var(--bad);background:#fff;color:var(--bad)}
+button:disabled{opacity:.5;cursor:default}
+main{max-width:980px;margin:0 auto;padding:20px}
+nav.tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:16px}
+nav.tabs button{background:#fff;color:var(--ink);border:1px solid var(--line)}
+nav.tabs button[aria-selected=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.card{background:#fff;border:1px solid var(--line);padding:18px 20px;margin-bottom:14px}
+.card h2{font-size:1.15rem;margin:0 0 12px}
+label{display:block;font-weight:700;font-size:.9rem;margin:10px 0 4px}
+input[type=text],input[type=date],input[type=password],textarea,select{width:100%;font:inherit;padding:8px 10px;border:1px solid #b9c4cf;background:#fff}
+textarea{min-height:90px}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0 14px}
+.hint{color:var(--muted);font-size:.875rem}
+.thumb{width:120px;height:80px;object-fit:cover;border:1px solid var(--line);display:block;margin-top:6px}
+.bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+#status{font-weight:700}
+#status.ok{color:var(--ok)}#status.bad{color:var(--bad)}
+.ev{border-inline-start:4px solid var(--blue)}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header>
+  <img src="../logo/main.png" alt="">
+  <h1>עריכת האתר של בארבור</h1>
+  <span id="status" role="status" aria-live="polite"></span>
+  <button id="save" disabled>שמירה ופרסום</button>
+</header>
+<main>
+  <section class="card" id="login">
+    <h2>כניסה</h2>
+    <p>כדי לשמור שינויים צריך מפתח גישה של גיטהאב לחשבון של בארבור. המפתח נשמר רק בדפדפן הזה.</p>
+    <label for="tok">מפתח גישה</label>
+    <input id="tok" type="password" autocomplete="off">
+    <p class="hint">איך מקבלים מפתח: בגיטהאב, בחשבון center-barbour ← Settings ← Developer settings ← Fine-grained tokens ← Generate. לבחור רק את המאגר countrybarbour.co.il, ולתת הרשאת Contents: Read and write.</p>
+    <div class="bar"><button id="go">כניסה</button><button class="ghost" id="logout" hidden>יציאה ומחיקת המפתח מהדפדפן</button></div>
+  </section>
+
+  <div id="app" hidden>
+    <nav class="tabs" role="tablist" aria-label="חלקי האתר">
+      <button role="tab" data-t="week" aria-selected="true">השבוע בבארבור</button>
+      <button role="tab" data-t="depts" aria-selected="false">מחלקות</button>
+      <button role="tab" data-t="hero" aria-selected="false">פתיחה</button>
+      <button role="tab" data-t="general" aria-selected="false">כללי</button>
+    </nav>
+    <div id="pane"></div>
+    <p class="hint">אחרי "שמירה ופרסום" האתר מתעדכן לבד תוך דקה עד שתיים. אירועים שהתאריך שלהם עבר יורדים מהאתר מעצמם.</p>
+  </div>
+</main>
+<script>
+(function(){
+'use strict';
+var REPO='center-barbour/countrybarbour.co.il', BR='main', API='https://api.github.com/repos/'+REPO+'/contents/';
+var S=null, SHA=null, TOKEN=localStorage.getItem('barbur-token')||'', tab='week', dirty=false, MEDIA=[];
+var $=function(s){return document.querySelector(s)};
+function status(t,cls){var e=$('#status');e.textContent=t;e.className=cls||'';}
+function h(tag,attrs,kids){var e=document.createElement(tag);for(var k in (attrs||{})){if(k==='text')e.textContent=attrs[k];else if(k.slice(0,2)==='on')e.addEventListener(k.slice(2),attrs[k]);else e.setAttribute(k,attrs[k]);}(kids||[]).forEach(function(c){if(c)e.appendChild(c)});return e;}
+function b64dec(s){return decodeURIComponent(escape(atob(s.replace(/\n/g,''))));}
+function b64enc(s){return btoa(unescape(encodeURIComponent(s)));}
+function gh(path,opt){opt=opt||{};opt.headers={'Authorization':'Bearer '+TOKEN,'Accept':'application/vnd.github+json'};return fetch(API+path+(opt.method?'':'?ref='+BR),opt).then(function(r){if(!r.ok)return r.text().then(function(t){throw new Error(r.status+' '+t.slice(0,140))});return r.json();});}
+function touch(){dirty=true;$('#save').disabled=false;status('יש שינויים שלא נשמרו');}
+
+function load(){
+  status('טוען…');
+  return Promise.all([gh('content/site.json'),gh('m')]).then(function(r){
+    SHA=r[0].sha;S=JSON.parse(b64dec(r[0].content));
+    MEDIA=r[1].filter(function(f){return /\.jpg$/i.test(f.name)}).map(function(f){return f.name.replace(/\.jpg$/i,'')}).sort();
+    $('#login').hidden=true;$('#app').hidden=false;$('#logout').hidden=false;status('מחובר','ok');render();
+  }).catch(function(e){status('הכניסה נכשלה: '+e.message,'bad');$('#login').hidden=false;});
+}
+$('#go').onclick=function(){TOKEN=$('#tok').value.trim();if(!TOKEN)return;localStorage.setItem('barbur-token',TOKEN);load();};
+$('#logout').onclick=function(){localStorage.removeItem('barbur-token');location.reload();};
+document.querySelectorAll('[role=tab]').forEach(function(b){b.onclick=function(){tab=b.dataset.t;document.querySelectorAll('[role=tab]').forEach(function(x){x.setAttribute('aria-selected',x===b)});render();};});
+window.addEventListener('beforeunload',function(e){if(dirty){e.preventDefault();e.returnValue='';}});
+
+function field(lbl,obj,key,type,hint){
+  var id='f'+Math.random().toString(36).slice(2,8);
+  var inp=type==='area'?h('textarea',{id:id}):h('input',{id:id,type:type||'text'});
+  inp.value=obj[key]==null?'':obj[key];
+  inp.addEventListener('input',function(){obj[key]=inp.value;touch();});
+  return h('div',{},[h('label',{for:id,text:lbl}),inp,hint?h('div',{class:'hint',text:hint}):null]);
+}
+function listField(lbl,obj,key){
+  var id='f'+Math.random().toString(36).slice(2,8);var inp=h('textarea',{id:id});inp.value=(obj[key]||[]).join('\n');
+  inp.addEventListener('input',function(){obj[key]=inp.value.split('\n').map(function(s){return s.trim()}).filter(Boolean);touch();});
+  return h('div',{},[h('label',{for:id,text:lbl}),inp,h('div',{class:'hint',text:'שורה לכל פריט'})]);
+}
+function imageField(lbl,obj,key,stripPos){
+  var id='f'+Math.random().toString(36).slice(2,8);
+  var cur=String(obj[key]||'').replace(/^[iv]:/,'').split('@')[0];
+  var sel=h('select',{id:id});MEDIA.forEach(function(n){var o=h('option',{value:n,text:n});if(n===cur)o.selected=true;sel.appendChild(o);});
+  var img=h('img',{class:'thumb',alt:'',src:'../m/'+cur+'.jpg'});
+  sel.onchange=function(){obj[key]=(stripPos?'':'i:')+sel.value;img.src='../m/'+sel.value+'.jpg';touch();};
+  var up=h('input',{type:'file',accept:'image/*'});
+  up.onchange=function(){var f=up.files[0];if(!f)return;uploadImage(f).then(function(name){MEDIA.push(name);MEDIA.sort();var o=h('option',{value:name,text:name});sel.appendChild(o);sel.value=name;sel.onchange();});};
+  return h('div',{},[h('label',{for:id,text:lbl}),sel,img,h('label',{text:'או להעלות תמונה חדשה'}),up]);
+}
+function uploadImage(file){
+  status('מעלה תמונה…');
+  return new Promise(function(res,rej){var r=new FileReader();r.onload=function(){var im=new Image();im.onload=function(){
+    var sc=Math.min(1,1800/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*sc);c.height=Math.round(im.height*sc);
+    c.getContext('2d').drawImage(im,0,0,c.width,c.height);var data=c.toDataURL('image/jpeg',0.8).split(',')[1];
+    var name='u'+new Date().toISOString().slice(0,10).replace(/-/g,'')+'-'+Math.random().toString(36).slice(2,6);
+    fetch(API+'m/'+name+'.jpg',{method:'PUT',headers:{'Authorization':'Bearer '+TOKEN,'Accept':'application/vnd.github+json'},body:JSON.stringify({message:'תמונה חדשה מהדשבורד',content:data,branch:BR})})
+      .then(function(x){if(!x.ok)throw new Error(x.status);status('התמונה הועלתה','ok');res(name);}).catch(function(e){status('העלאת התמונה נכשלה: '+e.message,'bad');rej(e);});
+  };im.src=r.result;};r.readAsDataURL(file);});
+}
+var DEPTOPTS=function(){return S.depts.map(function(d){return [d.k,d.name]}).concat([['community','קהילה'],['family','כל המשפחה']]);};
+function deptSelect(lbl,obj,key){var id='f'+Math.random().toString(36).slice(2,8);var sel=h('select',{id:id});DEPTOPTS().forEach(function(p){var o=h('option',{value:p[0],text:p[1]});if(p[0]===obj[key])o.selected=true;sel.appendChild(o);});sel.onchange=function(){obj[key]=sel.value;touch();};return h('div',{},[h('label',{for:id,text:lbl}),sel]);}
+
+var VIEWS={
+ week:function(p){
+   p.appendChild(h('div',{class:'bar'},[h('button',{text:'+ אירוע חדש',onclick:function(){S.week.unshift({day:'',date:'',date_iso:'',time:'',title:'אירוע חדש',who:'',where:'',tag:'culture',tagname:'תרבות',img:MEDIA[0],href:'https://www.coing.co/TelAvivBarbur/events'});touch();render();}})]));
+   S.week.forEach(function(w,i){
+     var c=h('section',{class:'card ev'},[h('h2',{text:w.title||'אירוע'})]);
+     var r1=h('div',{class:'row'},[field('כותרת',w,'title'),field('תאריך',w,'date_iso','date','מהתאריך נגזרים היום והתאריך המוצגים'),field('שעה',w,'time','text','למשל 16:30–18:00')]);
+     var r2=h('div',{class:'row'},[field('למי',w,'who'),field('איפה',w,'where'),field('קישור להרשמה או לפרטים',w,'href')]);
+     var r3=h('div',{class:'row'},[deptSelect('מחלקה (צבע התגית)',w,'tag'),field('טקסט התגית',w,'tagname'),imageField('תמונה',w,'img',true)]);
+     c.appendChild(r1);c.appendChild(r2);c.appendChild(r3);
+     c.appendChild(h('div',{class:'bar'},[h('button',{class:'del',text:'מחיקת האירוע',onclick:function(){if(confirm('למחוק את "'+w.title+'"?')){S.week.splice(i,1);touch();render();}}})]));
+     p.appendChild(c);
+   });
+ },
+ depts:function(p){
+   S.depts.forEach(function(d){
+     var c=h('details',{class:'card'},[h('summary',{},[h('strong',{text:d.name})])]);
+     c.appendChild(h('div',{class:'row'},[field('שם המחלקה',d,'name'),field('שורת פתיחה',d,'lead')]));
+     c.appendChild(field('טקסט העמוד',d,'say','area'));
+     c.appendChild(listField('מה יש כאן',d,'lst'));
+     d.go=d.go||['',''];
+     var go={href:d.go[0],txt:d.go[1]};
+     var r=h('div',{class:'row'},[field('קישור לכפתור ההרשמה',go,'href'),field('טקסט הכפתור',go,'txt')]);
+     r.addEventListener('input',function(){d.go=[go.href,go.txt];});
+     c.appendChild(r);
+     c.appendChild(imageField('תמונת הכרטיס בדף הבית',d,'card',true));
+     p.appendChild(c);
+   });
+ },
+ hero:function(p){
+   p.appendChild(h('p',{class:'hint',text:'הפתיחה של דף הבית: כל פריט הוא סרטון או תמונה עם כיתוב שמוביל למחלקה. סרטונים מוחלפים רק דרך המעצב.'}));
+   S.hero.forEach(function(x){
+     var c=h('section',{class:'card'},[h('h2',{text:x.caption})]);
+     c.appendChild(h('div',{class:'row'},[field('כיתוב',x,'caption'),deptSelect('מוביל למחלקה',x,'dept')]));
+     if(!/^v:/.test(x.media))c.appendChild(imageField('תמונה',x,'media'));else c.appendChild(h('p',{class:'hint',text:'סרטון: '+x.media.slice(2)}));
+     p.appendChild(c);
+   });
+ },
+ general:function(p){
+   var c=h('section',{class:'card'},[h('h2',{text:'כותרת ופרטים'})]);
+   c.appendChild(field('הכותרת הראשית',S.meta,'headline'));
+   c.appendChild(h('div',{class:'row'},[field('כתובת',S.contact,'addr'),field('טלפון',S.contact,'tel'),field('וואטסאפ',S.contact,'wa'),field('דוא"ל',S.contact,'mail')]));
+   p.appendChild(c);
+   var m=h('section',{class:'card'},[h('h2',{text:'מנוי'})]);m.appendChild(listField('מה כולל המנוי',S,'members'));p.appendChild(m);
+   var hr=h('section',{class:'card'},[h('h2',{text:'שעות פעילות'})]);
+   Object.keys(S.hours).forEach(function(k){var blk=S.hours[k];var t={v:blk.rows.map(function(r){return r.days+' | '+r.time}).join('\n')};
+     var ta=field(blk.title+' (יום | שעות, שורה לכל שורה)',t,'v','area');ta.addEventListener('input',function(){blk.rows=t.v.split('\n').filter(Boolean).map(function(l){var a=l.split('|');return {days:(a[0]||'').trim(),time:(a[1]||'').trim()}});});hr.appendChild(ta);});
+   p.appendChild(hr);
+   var s=h('section',{class:'card'},[h('h2',{text:'מצב האתר'})]);
+   [['noindex','להסתיר מגוגל (מתאים לאב טיפוס)'],['prototype_label','להציג "אב טיפוס" בתחתית']].forEach(function(o){var id='c'+o[0];var cb=h('input',{type:'checkbox',id:id});cb.checked=!!S.meta[o[0]];cb.onchange=function(){S.meta[o[0]]=cb.checked;touch();};s.appendChild(h('div',{class:'bar'},[cb,h('label',{for:id,text:o[1]})]));});
+   p.appendChild(s);
+ }
+};
+var DAYS=['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','ש׳'];
+function normalize(){S.week.forEach(function(w){if(w.date_iso){var d=new Date(w.date_iso+'T12:00:00');w.day=DAYS[d.getDay()];w.date=d.getDate()+'.'+(d.getMonth()+1);}});}
+function render(){var p=$('#pane');p.innerHTML='';VIEWS[tab](p);}
+$('#save').onclick=function(){
+  normalize();$('#save').disabled=true;status('שומר…');
+  fetch(API+'content/site.json',{method:'PUT',headers:{'Authorization':'Bearer '+TOKEN,'Accept':'application/vnd.github+json'},body:JSON.stringify({message:'עדכון תוכן מהדשבורד',content:b64enc(JSON.stringify(S,null,1)),sha:SHA,branch:BR})})
+   .then(function(r){if(!r.ok)return r.text().then(function(t){throw new Error(r.status+' '+t.slice(0,120))});return r.json();})
+   .then(function(j){SHA=j.content.sha;dirty=false;status('נשמר. האתר יתעדכן תוך דקה–שתיים','ok');})
+   .catch(function(e){$('#save').disabled=false;status('השמירה נכשלה: '+e.message,'bad');});
+};
+if(TOKEN){$('#tok').value=TOKEN;load();}
+})();
+</script>
+</body>
+</html>
