@@ -431,3 +431,10 @@ button{font:inherit;color:inherit}
    אותן הצללות שכבר קיימות, קצת כהות יותר, כדי שהטקסט יעמוד ביחס הנדרש גם מעל הצילומים הבהירים. */
 .look-c .home .top::before{background:linear-gradient(rgba(8,18,32,.74),rgba(8,18,32,.4) 70%,transparent)}
 .look-c .home .big .frame::after{background:linear-gradient(transparent 30%,rgba(10,20,35,.45) 55%,rgba(10,20,35,.78))}
+
+/* נגישות (16.11.2026, ממתין לאישור דניאל): הגדלה ל-200% במסך נמוך (1.4.4).
+   חל רק על חלון בגובה 520 פיקסלים ומטה, כדי שהלוגו לא יכסה את הכותרת. במסך רגיל אין שינוי. */
+@media (max-height:520px){
+  .look-c .home .big .frame{height:430px}
+  .look-c .home .hero{top:160px}
+}
