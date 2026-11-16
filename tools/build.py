@@ -16,6 +16,7 @@ WEEK = sorted([w for w in S['week'] if w.get('date_iso', '9999') >= TODAY], key=
 HOURS = {k: (v['title'], [(r['days'], r['time']) for r in v['rows']]) for k, v in S['hours'].items()}
 MEMBERS = S['members']
 META = S['meta']
+MDESC = S.get('media_desc', {})   # חלופה טקסטואלית לסרטונים (ת"י 5568, 1.2.1), לא נראית על המסך
 def e(s): return html.escape(s, quote=True)
 def ltr(s): return f'<span class="ltr">{e(s)}</span>'
 C = CONTACT
@@ -29,8 +30,9 @@ def m(spec, first=False):
     src, _, pos = src.partition('@')
     st = f' style="object-position:{pos}"' if pos else ''
     if kind == 'v':
+        desc = f'<p class="vh">{e(MDESC[src])}</p>' if MDESC.get(src) else ''
         return (f'<video class="m"{st} muted playsinline preload="{"auto" if first else "none"}" poster="m/{src}.jpg" aria-hidden="true">'
-                f'<source src="m/{src}.mp4" type="video/mp4"></video>')
+                f'<source src="m/{src}.mp4" type="video/mp4"></video>{desc}')
     lazy = '' if first else ' loading="lazy"'
     return f'<img class="m"{st} src="m/{src}.jpg" alt=""{lazy} decoding="async">'
 

@@ -26,6 +26,21 @@
     if (RM) mq.classList.add('stopped');
     function lab() { b.setAttribute('aria-label', mq.classList.contains('stopped') ? 'הפעלת הפס הנע' : 'עצירת הפס הנע'); }
     if (b) { b.addEventListener('click', function () { mq.classList.toggle('stopped'); lab(); }); lab(); }
+    /* נגישות: קישור שמקבל מיקוד מהמקלדת נגלל למרכז הפס, כדי שלא ייחתך בשוליים או מתחת לכפתור */
+    var view = mq.querySelector('.marq-view'), track = mq.querySelector('.marq-track');
+    mq.addEventListener('focusin', function (ev) {
+      var a = ev.target; if (!view || !a.closest || !a.closest('.marq-track')) return;
+      if (track) track.style.animation = 'none';   /* בזמן ניווט במקלדת הפס עומד במקומו ההתחלתי */
+      requestAnimationFrame(function () {
+        var r = a.getBoundingClientRect(), v = view.getBoundingClientRect();
+        view.scrollLeft += (r.left + r.width / 2) - (v.left + v.width / 2);
+      });
+    });
+    mq.addEventListener('focusout', function (ev) {
+      if (ev.relatedTarget && mq.contains(ev.relatedTarget)) return;
+      if (track) track.style.animation = '';
+      if (view) view.scrollLeft = 0;
+    });
   });
 
   /* שכבות מדיה בתוך מסגרת: מעבר רך, וידאו מתנגן רק כשהוא גלוי */
