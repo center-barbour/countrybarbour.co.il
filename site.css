@@ -404,3 +404,25 @@ button{font:inherit;color:inherit}
   .marq a{padding:0 18px;gap:10px}
 }
 [id]{scroll-margin-top:96px}
+
+/* =================================================================
+   עמוד הצהרת הנגישות (עמוד חדש, לא נוגע בעיצוב הנעול)
+   ================================================================= */
+.a11y-page .hero .lead{font-size:clamp(1.15rem,1.8vw,1.4rem);margin-top:14px;max-width:38em;color:var(--muted)}
+.doc{padding:8px 0 72px}
+.doc .wrap>*{max-width:860px}
+.doc .upd{color:var(--muted);font-size:1rem;padding-bottom:22px;border-bottom:1px solid var(--line)}
+.doc section{margin-top:40px}
+.doc h2{font-size:clamp(1.45rem,2.4vw,1.8rem);margin-bottom:14px}
+.doc p{margin-bottom:12px;max-width:44em}
+.doc .bul li{position:relative;padding-inline-start:22px;margin-bottom:10px;max-width:44em}
+.doc .bul li::before{content:"";position:absolute;inset-inline-start:0;top:.7em;width:8px;height:8px;border-radius:50%;background:var(--blue)}
+.doc .terms{border-collapse:collapse;margin:8px 0 4px;font-size:1rem}
+.doc .terms th,.doc .terms td{border:1px solid var(--line);padding:10px 14px;text-align:start;vertical-align:top}
+.doc .terms th{background:var(--soft);font-weight:700}
+.doc .coord{display:grid;grid-template-columns:max-content 1fr;gap:8px 24px;margin:18px 0 20px;padding:22px 24px;background:var(--soft);border-inline-start:6px solid var(--blue)}
+.doc .coord dt{font-weight:700}
+.doc .coord dd{margin:0}
+@media (max-width:560px){.doc .coord{grid-template-columns:1fr;gap:2px}.doc .coord dd{margin-bottom:10px}}
+.a11y-page .crumbs a{text-decoration:underline}
+.a11y-page .crumbs .here{opacity:1;margin:0;color:var(--muted)}
