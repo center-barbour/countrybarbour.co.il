@@ -36,8 +36,8 @@ h1,h2,h3{font-weight:800;line-height:1.06;letter-spacing:-.012em;margin:0}
 p{margin:0}
 ul{margin:0;padding:0;list-style:none}
 button{font:inherit;color:inherit}
-:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
-.field :focus-visible{outline-color:#fff}
+:focus-visible{outline:3px solid var(--ink);outline-offset:3px;box-shadow:0 0 0 3px #fff} /* נגישות: טבעת דו־צבעית, נראית על כל רקע (2.4.7, 1.4.11) */
+.caps a:focus-visible,.skip:focus-visible{outline-color:#fff;box-shadow:0 0 0 3px var(--ink)} /* רכיבים לבנים מעל רקע כהה: הטבעת הפוכה */
 .wrap{max-width:var(--wrap);margin:0 auto;padding-inline:var(--gut)}
 .vh{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .ltr{direction:ltr;unicode-bidi:isolate;display:inline-block}
@@ -258,7 +258,6 @@ button{font:inherit;color:inherit}
    ================================================================= */
 .field{background:#fff;color:var(--ink)}
 .field a{color:var(--ink)}
-.field :focus-visible{outline-color:var(--blue)}
 .top{border-bottom:1px solid var(--line)}
 .nav a{color:var(--ink)}
 .nav a:hover{color:var(--blue);border-bottom-color:var(--blue)}

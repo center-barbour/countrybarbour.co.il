@@ -85,7 +85,7 @@
     var media = Media($$('.frame', root)[0]);
     var pns = $$('[data-pn]', root), tabs = $$('[role="tab"]', root), pp = root.querySelector('.pp');
     var interval = +root.getAttribute('data-rot') || 6500;
-    var auto = true, live = !RM, timer = null;
+    var auto = true, live = !RM, timer = null, held = false;  /* held: המיקוד מהמקלדת בתוך הרוטטור */
     function set(n) {
       media.go(n, !auto);
       pns.forEach(function (p, k) { p.hidden = k !== n; });
@@ -95,13 +95,22 @@
     function next() { set((media.i + 1) % media.n); }
     function schedule() {
       clearTimeout(timer);
-      if (!live || !auto || media.n < 2) return;
+      if (!live || !auto || held || media.n < 2) return;
       if (isV(media.cur)) {
         var v = media.cur, d = (v.duration && isFinite(v.duration)) ? v.duration : 0;
         timer = setTimeout(next, Math.max(d * 1000 + 400, 9000) + 2000); /* רשת ביטחון אם ended לא מגיע */
       } else timer = setTimeout(next, interval);
     }
-    media.onEnd(function () { if (live && auto) next(); });
+    media.onEnd(function () { if (live && auto && !held) next(); });
+    /* נגישות: כשהמיקוד נכנס לרוטטור, המעבר האוטומטי נעצר, כדי שקישור ממוקד לא ייעלם (2.2.2, 2.4.3).
+       כשהמיקוד יוצא, המעבר ממשיך מאותו מקום. */
+    root.addEventListener('focusin', function () {
+      if (held) return; held = true; media.loop(true); clearTimeout(timer);
+    });
+    root.addEventListener('focusout', function (ev) {
+      if (ev.relatedTarget && root.contains(ev.relatedTarget)) return;
+      held = false; media.loop(!auto); schedule();
+    });
     function setLive(on) {
       live = on; root.classList.toggle('paused', !on); ppLabel(pp, on);
       media.live(on); schedule();
