@@ -175,7 +175,7 @@ var VIEWS={
  },
  general:function(p){
    var c=h('section',{class:'card'},[h('h2',{text:'כותרת ופרטים'})]);
-   c.appendChild(field('הכותרת הראשית',S.meta,'headline'));
+   c.appendChild(h('p',{class:'hint',text:'הכותרת הראשית והפתיחה עם סרטון הרחפן הן חלק מהעיצוב הנעול ולא נערכות כאן.'}));
    c.appendChild(h('div',{class:'row'},[field('כתובת',S.contact,'addr'),field('טלפון',S.contact,'tel'),field('וואטסאפ',S.contact,'wa'),field('דוא"ל',S.contact,'mail')]));
    p.appendChild(c);
    var m=h('section',{class:'card'},[h('h2',{text:'מנוי'})]);m.appendChild(listField('מה כולל המנוי',S,'members'));p.appendChild(m);
