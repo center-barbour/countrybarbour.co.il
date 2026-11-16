@@ -426,3 +426,8 @@ button{font:inherit;color:inherit}
 @media (max-width:560px){.doc .coord{grid-template-columns:1fr;gap:2px}.doc .coord dd{margin-bottom:10px}}
 .a11y-page .crumbs a{text-decoration:underline}
 .a11y-page .crumbs .here{opacity:1;margin:0;color:var(--muted)}
+
+/* נגישות (16.11.2026, ממתין לאישור דניאל): ניגודיות הטקסט הלבן מעל צילומי הפתיחה (1.4.3).
+   אותן הצללות שכבר קיימות, קצת כהות יותר, כדי שהטקסט יעמוד ביחס הנדרש גם מעל הצילומים הבהירים. */
+.look-c .home .top::before{background:linear-gradient(rgba(8,18,32,.74),rgba(8,18,32,.4) 70%,transparent)}
+.look-c .home .big .frame::after{background:linear-gradient(transparent 30%,rgba(10,20,35,.45) 55%,rgba(10,20,35,.78))}
