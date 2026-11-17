@@ -36,8 +36,13 @@ h1,h2,h3{font-weight:800;line-height:1.06;letter-spacing:-.012em;margin:0}
 p{margin:0}
 ul{margin:0;padding:0;list-style:none}
 button{font:inherit;color:inherit}
-:focus-visible{outline:3px solid var(--ink);outline-offset:3px;box-shadow:0 0 0 3px #fff} /* נגישות: טבעת דו־צבעית, נראית על כל רקע (2.4.7, 1.4.11) */
-.caps a:focus-visible,.skip:focus-visible{outline-color:#fff;box-shadow:0 0 0 3px var(--ink)} /* רכיבים לבנים מעל רקע כהה: הטבעת הפוכה */
+/* נגישות (2.4.7, 1.4.11): מסגרת מיקוד דקה בצבע הטקסט של הרכיב. הטקסט כבר עומד בניגודיות מול הרקע שלו,
+   ולכן גם המסגרת. רכיבים עם רקע מלא (כפתורים, כיתובים, קישורי דילוג) מקבלים את המסגרת בפנים. */
+:focus-visible{outline:2px solid currentColor;outline-offset:4px}
+a:not(.btn):focus-visible{border-radius:3px}
+.brand:focus-visible{border-radius:50%}
+.btn:focus-visible,.caps a:focus-visible,.skip:focus-visible{outline-offset:-5px}
+.btn:not(.ghost):focus-visible{outline-color:#fff}
 .wrap{max-width:var(--wrap);margin:0 auto;padding-inline:var(--gut)}
 .vh{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .ltr{direction:ltr;unicode-bidi:isolate;display:inline-block}
@@ -68,7 +73,7 @@ button{font:inherit;color:inherit}
 .pp .i-play{display:none}
 .paused .pp .i-play{display:block}
 .paused .pp .i-pause{display:none}
-.pp:focus-visible{outline:3px solid #fff;outline-offset:2px;box-shadow:0 0 0 6px var(--blue-dd)}
+.pp:focus-visible{outline:2px solid #fff;outline-offset:2px;box-shadow:0 0 0 5px var(--blue-dd)}
 
 /* ---------- תגיות מחלקה: גוון חיוור בלבד ---------- */
 .tag{display:inline-block;font-size:.8125rem;font-weight:700;line-height:1;padding:6px 10px 5px;background:var(--tb,#dee6ef);color:var(--tf,#315e93);white-space:nowrap}
@@ -371,6 +376,7 @@ button{font:inherit;color:inherit}
 .look-b .dept .top .nav a:hover{border-bottom-color:#fff}
 .look-b .dept .top .menu{color:#fff;border-color:rgba(255,255,255,.8)}
 .look-b .dept .brand img{height:104px}
+.look-b .dept .brand,.look-c .home:not(.scrolled) .brand{color:#fff} /* צבע המסגרת של הלוגו בזמן מיקוד בלבד */
 .look-b .dept .nav.open a{border-bottom-color:rgba(255,255,255,.3)}
 
 /* =================================================================
@@ -438,3 +444,4 @@ button{font:inherit;color:inherit}
   .look-c .home .hero{top:160px}
 }
 .foot .base a{text-decoration:underline}
+.doc h3{font-size:1.15rem;margin:22px 0 10px}
