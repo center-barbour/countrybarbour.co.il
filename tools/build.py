@@ -12,7 +12,8 @@ DEPTS = S['depts']
 D = {d['k']: d for d in DEPTS}
 HERO = [(h['media'], h['caption'], h['dept']) for h in S['hero']]
 TODAY = (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=2)).strftime('%Y-%m-%d')
-WEEK = sorted([w for w in S['week'] if w.get('date_iso', '9999') >= TODAY], key=lambda w: w.get('date_iso', ''))[:4]
+UPCOMING = sorted([w for w in S['week'] if w.get('date_iso', '9999') >= TODAY], key=lambda w: w.get('date_iso', ''))
+WEEK = UPCOMING[:4]   # דף הבית: ארבעת האירועים הקרובים. עמודי המחלקות בוחרים מתוך כל הרשימה
 HOURS = {k: (v['title'], [(r['days'], r['time']) for r in v['rows']]) for k, v in S['hours'].items()}
 MEMBERS = S['members']
 META = S['meta']
@@ -141,7 +142,7 @@ def footer():
   </div>
 </footer>'''
 
-def page(fn, title, body, desc=None, bcls="home"):
+def page(fn, title, body, desc=None, bcls="home", base=False):
     doc = f'''<!DOCTYPE html>
 <html lang="he" dir="rtl" class="look-b look-c">
 <head>
@@ -149,15 +150,16 @@ def page(fn, title, body, desc=None, bcls="home"):
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{e(title)}</title>
 <meta name="description" content="{e(desc or 'קאנטרי קהילתי בארבור, דרך ההגנה 135, תל אביב-יפו. ספורט, חוגים וקהילה בבית אחד.')}">
-{'<meta name="robots" content="noindex">' if META.get('noindex') else ''}
+{'<base href="/">' if base else ''}
+{'<meta name="robots" content="noindex">' if (META.get('noindex') or base) else ''}
 <link rel="icon" href="data:,">
 <link rel="preload" href="fonts/heebo-hebrew-800-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="site.css">
 <script>try{{var l=new URLSearchParams(location.search).get("look");if(l)document.documentElement.classList.add("look-"+l)}}catch(e){{}}</script>
 </head>
 <body class="{bcls}">
-<a class="skip" href="#main">דילוג לתוכן הראשי</a>
-<a class="skip" href="accessibility.html">הצהרת נגישות</a>
+<nav aria-label="קישורי דילוג"><a class="skip" href="#main">דילוג לתוכן הראשי</a>
+<a class="skip" href="accessibility.html">הצהרת נגישות</a></nav>
 <div class="field">
 {header()}
 </div>
@@ -219,7 +221,7 @@ for i, d in enumerate(DEPTS):
     reach += f'<li>וואטסאפ: <a href="https://wa.me/{C["wa_i"]}">{ltr(C["wa"])}</a></li>'
     side += f'<h2>יש שאלה?</h2><ul class="reach">{reach}</ul>'
     lis = ''.join(f'<li>{e(x)}</li>' for x in d['lst'])
-    ev = [w for w in WEEK if w['tag'] == k]
+    ev = [w for w in UPCOMING if w['tag'] == k][:4]
     evs = week(ev, title=f'בקרוב ב{d["name"]}', sub='אירועים קרובים', sid='dweek', cls='week devents') if ev else ''
     others = [DEPTS[(i + j) % len(DEPTS)] for j in (1, 2, 3)]
     body = f'''<section class="field hero dhero" aria-labelledby="h1">
@@ -324,3 +326,23 @@ if A:
 </div>"""
     page('accessibility.html', 'הצהרת נגישות · קאנטרי קהילתי בארבור', stmt,
          desc='הצהרת הנגישות של אתר קאנטרי קהילתי בארבור: רמת הנגישות, ההתאמות שבוצעו, ופרטי רכז הנגישות.', bcls='page a11y-page')
+
+# =========================== עמוד "לא נמצא" (404) ===========================
+# גיטהאב מציג אותו לכל כתובת שלא קיימת. base href="/" כדי שהעיצוב ייטען גם בכתובת עמוקה.
+nf = """<section class="field hero a11y-hero" aria-labelledby="h1">
+  <div class="wrap">
+    <h1 id="h1">העמוד לא נמצא</h1>
+    <p class="lead">ייתכן שהקישור ישן או שנפלה טעות בכתובת. מכאן אפשר להמשיך:</p>
+  </div>
+</section>
+<div class="doc">
+  <div class="wrap">
+    <ul class="bul">
+      <li><a href="index.html">לדף הבית</a></li>
+      <li><a href="index.html#week">לאירועים הקרובים</a></li>
+      <li><a href="index.html#depts">לכל המחלקות</a></li>
+      <li><a href="#contact">ליצירת קשר</a></li>
+    </ul>
+  </div>
+</div>"""
+page('404.html', 'העמוד לא נמצא · קאנטרי קהילתי בארבור', nf, bcls='page a11y-page', base=True)

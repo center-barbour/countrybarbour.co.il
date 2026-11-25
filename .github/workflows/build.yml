@@ -26,10 +26,16 @@ jobs:
         run: python3 tools/build.py
       - name: בדיקת נעילת העיצוב אחרי הבנייה
         run: python3 tools/check_design.py
+      - name: איסוף קבצי האתר לפרסום (בלי כלים, תוכן גולמי, צילומי ייחוס ומסמכים פנימיים)
+        run: |
+          mkdir _site
+          cp *.html site.css site.js CNAME _site/
+          cp -r m logo fonts admin _site/
+          touch _site/.nojekyll
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: _site
   deploy:
     needs: build
     runs-on: ubuntu-latest
